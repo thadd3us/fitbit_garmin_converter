@@ -19,7 +19,7 @@ def convert_weight(
     all_data = []
     for file in files:
         try:
-            data = pd.read_json(file)
+            data = pd.read_json(file, convert_dates=False)
             all_data.append(data)
         except Exception as e:
             typer.echo(f"Error reading {file}: {e}")
@@ -28,17 +28,24 @@ def convert_weight(
     df = pd.concat(all_data, ignore_index=True)
     
     # Validate required columns exist
-    required_cols = ['date', 'weight', 'bmi']
+    required_cols = ['date', 'time', 'weight', 'bmi']
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
         typer.echo(f"Error: Missing required columns: {missing_cols}")
         raise typer.Exit(1)
     
+    # Combine date and time into ISO timestamp
+    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format='%m/%d/%y %H:%M:%S')
+    df['Date'] = df['datetime'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+    
     # Add Fat column (optional)
     df['Fat'] = df['fat'] if 'fat' in df.columns else 0
     
-    output_df = df[['date', 'weight', 'bmi', 'Fat']].rename(columns={
-        'date': 'Date', 'weight': 'Weight', 'bmi': 'BMI'
+    # Sort by datetime
+    df = df.sort_values('datetime')
+    
+    output_df = df[['Date', 'weight', 'bmi', 'Fat']].rename(columns={
+        'weight': 'Weight', 'bmi': 'BMI'
     })
     
     output_df.to_csv(output_file, index=False)
