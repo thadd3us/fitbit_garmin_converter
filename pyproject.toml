@@ -1,0 +1,21 @@
+[project]
+name = "fitbit-garmin-converter"
+version = "0.1.0"
+description = "Convert Fitbit exported data to Garmin Connect format"
+dependencies = [
+    "typer",
+    "pandas",
+]
+
+[project.scripts]
+fitbit-garmin = "fitbit_garmin_converter.cli:app"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "syrupy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
