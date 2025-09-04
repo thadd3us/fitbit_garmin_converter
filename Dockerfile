@@ -16,5 +16,8 @@ COPY pyproject.toml uv.lock ./
 RUN touch README.md
 RUN uv sync --all-groups --active
 
+RUN chmod a+rwX -R /venv
+RUN chmod a+rwX -R /uv_cache
+
 WORKDIR /
 CMD ["/bin/bash"]
