@@ -14,7 +14,7 @@ ENV PATH=/venv/bin:$PATH
 WORKDIR /tmp/warm_uv_cache_and_venv
 COPY pyproject.toml uv.lock ./
 RUN touch README.md
-RUN uv sync --all-groups --active
+RUN uv sync --all-packages --active
 
 RUN chmod a+rwX -R /venv
 RUN chmod a+rwX -R /uv_cache
