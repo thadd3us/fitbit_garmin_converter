@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = "==3.11.*"
 
 [[package]]
@@ -33,7 +33,7 @@ dependencies = [
     { name = "uv" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "syrupy" },
@@ -42,12 +42,15 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pandas" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "syrupy", marker = "extra == 'dev'" },
     { name = "typer" },
     { name = "uv" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.4.1" },
+    { name = "syrupy", specifier = ">=4.9.1" },
+]
 
 [[package]]
 name = "iniconfig"
