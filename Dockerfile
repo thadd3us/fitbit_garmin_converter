@@ -1,0 +1,21 @@
+FROM python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312
+
+RUN pip install --no-cache-dir uv
+RUN which uv
+
+WORKDIR /tmp/warm_uv_cache
+COPY pyproject.toml uv.lock ./
+RUN touch README.md
+
+RUN python -m venv /venv
+
+ENV VIRTUAL_ENV=/venv
+ENV UV_VENV_DIR=/venv
+ENV UV_CACHE_DIR=/uv_cache
+ENV PATH=/venv/bin:$PATH
+
+RUN uv sync --all-groups --active
+
+WORKDIR /
+
+CMD ["/bin/bash"]
