@@ -34,22 +34,39 @@ def convert_weight(
         typer.echo(f"Error: Missing required columns: {missing_cols}")
         raise typer.Exit(1)
     
-    # Combine date and time into ISO timestamp
+    # Combine date and time into datetime for processing
     df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format='%m/%d/%y %H:%M:%S')
-    df['Date'] = df['datetime'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+    
+    # Extract date only for grouping
+    df['date_only'] = df['datetime'].dt.date
+    
+    # Group by date and take minimum weight for each day
+    agg_dict = {
+        'weight': 'min',
+        'bmi': 'first',  # Take first BMI value for the day (could also use corresponding BMI to min weight)
+    }
+    
+    # Only add fat aggregation if the column exists
+    if 'fat' in df.columns:
+        agg_dict['fat'] = 'first'
+    
+    daily_min = df.groupby('date_only').agg(agg_dict).reset_index()
+    
+    # Format date as YYYY-MM-DD for Garmin
+    daily_min['Date'] = pd.to_datetime(daily_min['date_only']).dt.strftime('%Y-%m-%d')
     
     # Add Fat column (optional)
-    df['Fat'] = df['fat'] if 'fat' in df.columns else 0
+    daily_min['Fat'] = daily_min['fat'] if 'fat' in df.columns else 0
     
-    # Sort by datetime
-    df = df.sort_values('datetime')
+    # Sort by date
+    daily_min = daily_min.sort_values('date_only')
     
-    output_df = df[['Date', 'weight', 'bmi', 'Fat']].rename(columns={
+    output_df = daily_min[['Date', 'weight', 'bmi', 'Fat']].rename(columns={
         'weight': 'Weight', 'bmi': 'BMI'
     })
     
     output_df.to_csv(output_file, index=False)
-    typer.echo(f"Converted {len(df)} records to {output_file}")
+    typer.echo(f"Converted {len(df)} records to {len(output_df)} daily records in {output_file}")
 
 if __name__ == "__main__":
     app()
