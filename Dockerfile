@@ -1,23 +1,4 @@
-FROM python:3.11-slim@sha256:1d6131b5d479888b43200645e03a78443c7157efbdb730e6b48129740727c312
-
-RUN pip install --no-cache-dir uv
-RUN which uv
-
-# Create a virtual environment.
-RUN python -m venv /venv
-ENV VIRTUAL_ENV=/venv
-ENV UV_VENV_DIR=/venv
-ENV UV_CACHE_DIR=/uv_cache
-ENV PATH=/venv/bin:$PATH
-
-# Warm the UV cache and create the virtual environment.
-WORKDIR /tmp/warm_uv_cache_and_venv
-COPY pyproject.toml uv.lock ./
-RUN touch README.md
-RUN uv sync --all-packages --active
-
-RUN chmod a+rwX -R /venv
-RUN chmod a+rwX -R /uv_cache
-
-WORKDIR /
-CMD ["/bin/bash"]
+FROM alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+# RUN pip install --no-cache-dir uv
+# RUN which uv
+RUN echo "Hello Imbue!" > /hello_sculptor.txt
