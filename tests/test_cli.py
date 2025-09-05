@@ -1,5 +1,9 @@
 import subprocess
 from pathlib import Path
+import pytest
+
+
+
 
 def test_convert_weight_cli(tmp_path, snapshot):
     output_file = tmp_path / "output.csv"
@@ -12,3 +16,6 @@ def test_convert_weight_cli(tmp_path, snapshot):
     
     assert result.returncode == 0
     assert snapshot == output_file.read_text()
+
+def test_bad():
+    assert False

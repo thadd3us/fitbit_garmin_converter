@@ -20,4 +20,4 @@ RUN chmod a+rwX -R /venv
 RUN chmod a+rwX -R /uv_cache
 
 WORKDIR /
-CMD ["/bin/bash"]
+CMD ["bash"]
