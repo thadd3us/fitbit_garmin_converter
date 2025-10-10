@@ -1,7 +1,6 @@
 from pathlib import Path
 import typer
 import pandas as pd
-import sys
 import os
 from datetime import datetime, timezone
 from getpass import getpass
@@ -81,13 +80,11 @@ def upload_to_garmin(
 ):
     """Upload Fitbit weight data directly to Garmin Connect via API."""
 
-    # Import Garmin API from the third-party directory
-    sys.path.insert(0, str(Path(__file__).parent.parent / "third-party" / "python-garminconnect"))
     try:
         from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
     except ImportError as e:
         typer.echo(f"Error: Could not import garminconnect library: {e}")
-        typer.echo("Make sure the python-garminconnect repository is cloned in third-party/")
+        typer.echo("Please run 'uv sync' to install dependencies")
         raise typer.Exit(1)
 
     # Read and combine all weight data files

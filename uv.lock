@@ -66,7 +66,7 @@ name = "fitbit-garmin-converter"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "garth" },
+    { name = "garminconnect" },
     { name = "pandas" },
     { name = "pytest" },
     { name = "requests" },
@@ -77,7 +77,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "garth", specifier = ">=0.5.17,<0.6.0" },
+    { name = "garminconnect", directory = "third-party/python-garminconnect" },
     { name = "pandas" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "requests" },
@@ -85,6 +85,37 @@ requires-dist = [
     { name = "typer" },
     { name = "uv" },
 ]
+
+[[package]]
+name = "garminconnect"
+version = "0.2.30"
+source = { directory = "third-party/python-garminconnect" }
+dependencies = [
+    { name = "garth" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "black", extras = ["jupyter"], marker = "extra == 'linting'" },
+    { name = "coverage", marker = "extra == 'testing'" },
+    { name = "garth", specifier = ">=0.5.17,<0.6.0" },
+    { name = "garth", marker = "extra == 'example'", specifier = ">=0.5.17,<0.6.0" },
+    { name = "ipdb", marker = "extra == 'dev'" },
+    { name = "ipykernel", marker = "extra == 'dev'" },
+    { name = "ipython", marker = "extra == 'dev'" },
+    { name = "isort", marker = "extra == 'linting'" },
+    { name = "matplotlib", marker = "extra == 'dev'" },
+    { name = "mypy", marker = "extra == 'linting'" },
+    { name = "pandas", marker = "extra == 'dev'" },
+    { name = "pytest", marker = "extra == 'testing'" },
+    { name = "pytest-vcr", marker = "extra == 'testing'", specifier = ">=1.0.2" },
+    { name = "readchar", marker = "extra == 'example'" },
+    { name = "requests", marker = "extra == 'example'" },
+    { name = "ruff", marker = "extra == 'linting'" },
+    { name = "types-requests", marker = "extra == 'linting'" },
+    { name = "vcrpy", marker = "extra == 'testing'", specifier = ">=7.0.0" },
+]
+provides-extras = ["dev", "linting", "testing", "example"]
 
 [[package]]
 name = "garth"
