@@ -192,22 +192,36 @@ def upload_to_garmin(
             # Format timestamp
             timestamp = dt.isoformat()
 
+            weight_value = float(row['weight'])
+
+            typer.echo(f"\n🔄 Uploading: {dt} - {weight_value} {unit}")
+            typer.echo(f"   Timestamp: {timestamp}")
+
             # Upload weight
             result = api.add_weigh_in(
-                weight=float(row['weight']),
+                weight=weight_value,
                 unitKey=unit,
                 timestamp=timestamp
             )
 
+            typer.echo(f"   ✅ Success - API response: {result}")
             success_count += 1
-            if success_count % 10 == 0:
-                typer.echo(f"  Uploaded {success_count}/{len(df)} records...")
 
         except Exception as e:
             error_count += 1
-            typer.echo(f"❌ Error uploading record from {row['datetime']}: {e}")
+            typer.echo(f"   ❌ Error: {e}")
+            typer.echo(f"   Error type: {type(e).__name__}")
+
+            # Try to get more details from the exception
+            if hasattr(e, 'response'):
+                typer.echo(f"   HTTP Status: {e.response.status_code if hasattr(e.response, 'status_code') else 'N/A'}")
+                try:
+                    typer.echo(f"   Response body: {e.response.text[:200]}")
+                except:
+                    pass
+
             if error_count > 10:
-                typer.echo("Too many errors, aborting upload")
+                typer.echo("\nToo many errors, aborting upload")
                 raise typer.Exit(1)
 
     typer.echo("\n" + "=" * 50)
