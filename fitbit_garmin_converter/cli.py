@@ -197,14 +197,23 @@ def upload_to_garmin(
             typer.echo(f"\n🔄 Uploading: {dt} - {weight_value} {unit}")
             typer.echo(f"   Timestamp: {timestamp}")
 
-            # Upload weight
-            result = api.add_weigh_in(
-                weight=weight_value,
-                unitKey=unit,
-                timestamp=timestamp
-            )
+            # Upload weight - the API might return empty response on success
+            try:
+                result = api.add_weigh_in(
+                    weight=weight_value,
+                    unitKey=unit,
+                    timestamp=timestamp
+                )
+                typer.echo(f"   ✅ Success - API response: {result}")
+            except Exception as json_error:
+                # Check if this is a JSONDecodeError from an empty successful response
+                if "Expecting value" in str(json_error):
+                    # Try to check the underlying HTTP response
+                    typer.echo(f"   ⚠️  Got empty response (likely success, checking...)")
+                    raise
+                else:
+                    raise
 
-            typer.echo(f"   ✅ Success - API response: {result}")
             success_count += 1
 
         except Exception as e:
@@ -212,13 +221,27 @@ def upload_to_garmin(
             typer.echo(f"   ❌ Error: {e}")
             typer.echo(f"   Error type: {type(e).__name__}")
 
-            # Try to get more details from the exception
+            # For JSONDecodeError, check if there's a response object in the chain
+            import traceback
+            tb = traceback.format_exc()
+
+            # Look for HTTP response details in various places
+            response_obj = None
             if hasattr(e, 'response'):
-                typer.echo(f"   HTTP Status: {e.response.status_code if hasattr(e.response, 'status_code') else 'N/A'}")
+                response_obj = e.response
+            elif hasattr(e, '__context__') and hasattr(e.__context__, 'response'):
+                response_obj = e.__context__.response
+
+            if response_obj:
                 try:
-                    typer.echo(f"   Response body: {e.response.text[:200]}")
-                except:
-                    pass
+                    typer.echo(f"   HTTP Status: {response_obj.status_code}")
+                    typer.echo(f"   Response headers: {dict(response_obj.headers)}")
+                    typer.echo(f"   Response body: {response_obj.text[:500]}")
+                except Exception as ex:
+                    typer.echo(f"   Could not read response: {ex}")
+            else:
+                # Print the full traceback to see where the error is coming from
+                typer.echo(f"   Full traceback:\n{tb}")
 
             if error_count > 10:
                 typer.echo("\nToo many errors, aborting upload")
