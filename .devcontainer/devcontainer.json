@@ -7,7 +7,6 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=volume"
   ],
-  // "workspaceMount": "source=thad-and-andrew-volume,target=/workspace,type=volume",
   "workspaceFolder": "/workspace",
   "postCreateCommand": "uv sync --all-packages --active",
   "customizations": {
