@@ -28,7 +28,7 @@ uv run python fitbit_garmin_converter/cli.py upload-to-garmin \
 
 Set credentials via environment variables or you'll be prompted:
 ```bash
-export GARMIN_EMAIL="your@email.com"
+export GARMIN_EMAIL="thad@imbue.com"
 export GARMIN_PASSWORD="yourpassword"
 ```
 
