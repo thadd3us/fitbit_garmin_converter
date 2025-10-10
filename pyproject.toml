@@ -10,6 +10,5 @@ dependencies = [
     "uv",
     "pytest>=8.4.1",
     "syrupy>=4.9.1",
-    "garth>=0.5.17,<0.6.0",
-    "requests",
+    "garminconnect @ file:///${PROJECT_ROOT}/third-party/python-garminconnect",
 ]
