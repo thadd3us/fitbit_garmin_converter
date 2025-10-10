@@ -1,0 +1,36 @@
+{
+    "editor.formatOnSave": true,
+    "ruff.configuration": "pyproject.toml",
+    "python.testing.pytestArgs": [
+        "-s",
+        "-vvv",
+        "--doctest-modules",
+        "--doctest-report=cdiff",
+    ],
+    "python.testing.pytestPath": ".venv/bin/pytest",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.pytestEnabled": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnPaste": false,
+        "editor.tabSize": 4,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        }
+    },
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    //
+    // Formatting
+    //
+    // *.ipynb notebook formatting removes imports not used by the first cell, which is all of them, which is very annoying.
+    "notebook.formatOnSave.enabled": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        ".env": true,
+        ".venv": true,
+    },
+    "files.autoSave": "onFocusChange",
+}

@@ -34,7 +34,6 @@ htmlcov/
 .cache
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
