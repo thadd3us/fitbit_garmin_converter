@@ -76,7 +76,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "garminconnect", directory = "third-party/python-garminconnect" },
+    { name = "garminconnect", editable = "third-party/python-garminconnect" },
     { name = "pandas" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "syrupy", specifier = ">=4.9.1" },
@@ -87,7 +87,7 @@ requires-dist = [
 [[package]]
 name = "garminconnect"
 version = "0.2.30"
-source = { directory = "third-party/python-garminconnect" }
+source = { editable = "third-party/python-garminconnect" }
 dependencies = [
     { name = "garth" },
 ]

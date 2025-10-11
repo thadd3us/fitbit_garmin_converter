@@ -8,6 +8,8 @@ Created with Sculptor by Imbue.
 uv sync
 ```
 
+The `garminconnect` package is installed in editable mode from `third-party/python-garminconnect`, so changes to that code are picked up automatically.
+
 ## Usage
 
 ### Convert to CSV (legacy)
