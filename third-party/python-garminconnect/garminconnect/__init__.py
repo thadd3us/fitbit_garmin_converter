@@ -5,7 +5,7 @@ import numbers
 import os
 import re
 from collections.abc import Callable
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime, timezone
 from enum import Enum, auto
 from pathlib import Path
 from typing import Any
@@ -13,7 +13,7 @@ from typing import Any
 import garth
 import requests
 from garth.exc import GarthException, GarthHTTPError
-from requests import HTTPError
+from requests import HTTPError, Response
 
 from .fit import FitEncoderWeight  # type: ignore
 
@@ -698,7 +698,7 @@ class Garmin:
             raise ValueError(f"invalid timestamp format: {e}") from e
 
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt.astimezone(timezone.utc)
+        dtGMT = dt.astimezone(UTC)
         payload = {
             "dateTimestamp": _fmt_ts(dt),
             "gmtTimestamp": _fmt_ts(dtGMT),
@@ -716,7 +716,7 @@ class Garmin:
         unitKey: str = "kg",
         dateTimestamp: str = "",
         gmtTimestamp: str = "",
-    ) -> dict[str, Any]:
+    ) -> Response:
         """Add a weigh-in with explicit timestamps (default to kg)"""
 
         url = f"{self.garmin_connect_weight_url}/user-weight"
@@ -733,10 +733,10 @@ class Garmin:
             g = datetime.fromisoformat(gmtTimestamp)
             # Assume provided GMT is UTC if naive; otherwise convert to UTC
             if g.tzinfo is None:
-                g = g.replace(tzinfo=timezone.utc)
-            dtGMT = g.astimezone(timezone.utc)
+                g = g.replace(tzinfo=UTC)
+            dtGMT = g.astimezone(UTC)
         else:
-            dtGMT = dt.astimezone(timezone.utc)
+            dtGMT = dt.astimezone(UTC)
 
         # Validate weight for consistency with add_weigh_in
         weight = _validate_positive_number(weight, "weight")
@@ -753,7 +753,10 @@ class Garmin:
         logger.debug("Adding weigh-in with explicit timestamps: %s", payload)
 
         # Make the POST request
-        return self.garth.post("connectapi", url, json=payload).json()
+        response = self.garth.post("connectapi", url, json=payload)
+        if response.get("success") is False:
+            raise GarminConnectConnectionError(response.get("message"))
+        return response
 
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
@@ -860,7 +863,7 @@ class Garmin:
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt.astimezone(timezone.utc)
+        dtGMT = dt.astimezone(UTC)
         payload = {
             "measurementTimestampLocal": _fmt_ts(dt),
             "measurementTimestampGMT": _fmt_ts(dtGMT),
@@ -1861,8 +1864,7 @@ class Garmin:
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         url = (
-            f"{self.garmin_connect_gear_baseurl}user/"
-            f"{userProfileNumber}/activityTypes"
+            f"{self.garmin_connect_gear_baseurl}user/{userProfileNumber}/activityTypes"
         )
         logger.debug("Requesting gear defaults for user %s", userProfileNumber)
         return self.connectapi(url)

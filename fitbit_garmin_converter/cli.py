@@ -1,16 +1,22 @@
-from pathlib import Path
-import typer
-import pandas as pd
 import os
-from datetime import datetime, timezone
 from getpass import getpass
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+import typer
 
 app = typer.Typer()
 
+
 @app.command()
 def convert_weight(
-    input_dir: Path = typer.Argument(..., help="Directory containing weight JSON files"),
-    glob_pattern: str = typer.Option("weight*.json", help="Glob pattern for weight files"),
+    input_dir: Path = typer.Argument(
+        ..., help="Directory containing weight JSON files"
+    ),
+    glob_pattern: str = typer.Option(
+        "weight*.json", help="Glob pattern for weight files"
+    ),
     output_file: Path = typer.Option("weight_data.csv", help="Output CSV file path"),
 ):
     """Convert Fitbit weight data to Garmin Connect CSV format."""
@@ -18,7 +24,7 @@ def convert_weight(
     if not files:
         typer.echo(f"No files found matching {glob_pattern} in {input_dir}")
         raise typer.Exit(1)
-    
+
     all_data = []
     for file in files:
         try:
@@ -27,61 +33,76 @@ def convert_weight(
         except Exception as e:
             typer.echo(f"Error reading {file}: {e}")
             raise typer.Exit(1)
-    
+
     df = pd.concat(all_data, ignore_index=True)
-    
+
     # Validate required columns exist
-    required_cols = ['date', 'time', 'weight', 'bmi']
+    required_cols = ["date", "time", "weight", "bmi"]
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
         typer.echo(f"Error: Missing required columns: {missing_cols}")
         raise typer.Exit(1)
-    
+
     # Combine date and time into datetime for processing
-    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format='%m/%d/%y %H:%M:%S')
-    
+    df["datetime"] = pd.to_datetime(
+        df["date"] + " " + df["time"], format="%m/%d/%y %H:%M:%S"
+    )
+
     # Extract date only for grouping
-    df['date_only'] = df['datetime'].dt.date
-    
+    df["date_only"] = df["datetime"].dt.date
+
     # Group by date and take minimum weight for each day
     agg_dict = {
-        'weight': 'min',
-        'bmi': 'first',  # Take first BMI value for the day (could also use corresponding BMI to min weight)
+        "weight": "min",
+        "bmi": "first",  # Take first BMI value for the day (could also use corresponding BMI to min weight)
     }
-    
+
     # Only add fat aggregation if the column exists
-    if 'fat' in df.columns:
-        agg_dict['fat'] = 'first'
-    
-    daily_min = df.groupby('date_only').agg(agg_dict).reset_index()
-    
+    if "fat" in df.columns:
+        agg_dict["fat"] = "first"
+
+    daily_min = df.groupby("date_only").agg(agg_dict).reset_index()
+
     # Format date as YYYY-MM-DD for Garmin
-    daily_min['Date'] = pd.to_datetime(daily_min['date_only']).dt.strftime('%Y-%m-%d')
-    
+    daily_min["Date"] = pd.to_datetime(daily_min["date_only"]).dt.strftime("%Y-%m-%d")
+
     # Add Fat column (optional)
-    daily_min['Fat'] = daily_min['fat'] if 'fat' in df.columns else 0
-    
+    daily_min["Fat"] = daily_min["fat"] if "fat" in df.columns else 0
+
     # Sort by date
-    daily_min = daily_min.sort_values('date_only')
-    
-    output_df = daily_min[['Date', 'weight', 'bmi', 'Fat']].rename(columns={
-        'weight': 'Weight', 'bmi': 'BMI'
-    })
-    
+    daily_min = daily_min.sort_values("date_only")
+
+    output_df = daily_min[["Date", "weight", "bmi", "Fat"]].rename(
+        columns={"weight": "Weight", "bmi": "BMI"}
+    )
+
     output_df.to_csv(output_file, index=False)
-    typer.echo(f"Converted {len(df)} records to {len(output_df)} daily records in {output_file}")
+    typer.echo(
+        f"Converted {len(df)} records to {len(output_df)} daily records in {output_file}"
+    )
+
 
 @app.command()
 def upload_to_garmin(
-    input_dir: Path = typer.Argument(..., help="Directory containing weight JSON files"),
-    glob_pattern: str = typer.Option("weight*.json", help="Glob pattern for weight files"),
+    input_dir: Path = typer.Argument(
+        ..., help="Directory containing weight JSON files"
+    ),
+    glob_pattern: str = typer.Option(
+        "weight*.json", help="Glob pattern for weight files"
+    ),
     unit: str = typer.Option("lbs", help="Weight unit (kg or lbs)"),
-    dry_run: bool = typer.Option(False, help="Simulate upload without actually sending data"),
+    dry_run: bool = typer.Option(
+        False, help="Simulate upload without actually sending data"
+    ),
 ):
     """Upload Fitbit weight data directly to Garmin Connect via API."""
 
     try:
-        from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
+        from garminconnect import (
+            Garmin,
+            GarminConnectAuthenticationError,
+            GarminConnectConnectionError,
+        )
     except ImportError as e:
         typer.echo(f"Error: Could not import garminconnect library: {e}")
         typer.echo("Please run 'uv sync' to install dependencies")
@@ -105,17 +126,19 @@ def upload_to_garmin(
     df = pd.concat(all_data, ignore_index=True)
 
     # Validate required columns
-    required_cols = ['date', 'time', 'weight']
+    required_cols = ["date", "time", "weight"]
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
         typer.echo(f"Error: Missing required columns: {missing_cols}")
         raise typer.Exit(1)
 
     # Combine date and time into datetime
-    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'], format='%m/%d/%y %H:%M:%S')
+    df["datetime"] = pd.to_datetime(
+        df["date"] + " " + df["time"], format="%m/%d/%y %H:%M:%S"
+    )
 
     # Sort by datetime
-    df = df.sort_values('datetime')
+    df = df.sort_values("datetime")
 
     typer.echo(f"Found {len(df)} weight records to upload")
 
@@ -144,7 +167,11 @@ def upload_to_garmin(
         api = Garmin()
         api.login(str(tokenstore_path))
         typer.echo("✅ Successfully logged in using saved tokens!")
-    except (FileNotFoundError, GarminConnectAuthenticationError, GarminConnectConnectionError):
+    except (
+        FileNotFoundError,
+        GarminConnectAuthenticationError,
+        GarminConnectConnectionError,
+    ):
         typer.echo("No valid tokens found. Please login with credentials.")
 
         # Get credentials
@@ -185,14 +212,14 @@ def upload_to_garmin(
     for idx, row in df.iterrows():
         try:
             # Convert datetime to timezone-aware
-            dt = row['datetime']
+            dt = row["datetime"]
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=ZoneInfo("America/Los_Angeles"))
 
             # Format timestamp
             timestamp = dt.isoformat()
 
-            weight_value = float(row['weight'])
+            weight_value = float(row["weight"])
 
             typer.echo(f"\n🔄 Uploading: {dt} - {weight_value} {unit}")
             typer.echo(f"   Timestamp: {timestamp}")
@@ -209,7 +236,7 @@ def upload_to_garmin(
                 # Check if this is a JSONDecodeError from an empty successful response
                 if "Expecting value" in str(json_error):
                     # Try to check the underlying HTTP response
-                    typer.echo(f"   ⚠️  Got empty response (likely success, checking...)")
+                    typer.echo("   ⚠️  Got empty response (likely success, checking...)")
                     raise
                 else:
                     raise
@@ -223,13 +250,14 @@ def upload_to_garmin(
 
             # For JSONDecodeError, check if there's a response object in the chain
             import traceback
+
             tb = traceback.format_exc()
 
             # Look for HTTP response details in various places
             response_obj = None
-            if hasattr(e, 'response'):
+            if hasattr(e, "response"):
                 response_obj = e.response
-            elif hasattr(e, '__context__') and hasattr(e.__context__, 'response'):
+            elif hasattr(e, "__context__") and hasattr(e.__context__, "response"):
                 response_obj = e.__context__.response
 
             if response_obj:
@@ -248,10 +276,11 @@ def upload_to_garmin(
                 raise typer.Exit(1)
 
     typer.echo("\n" + "=" * 50)
-    typer.echo(f"✅ Upload complete!")
+    typer.echo("✅ Upload complete!")
     typer.echo(f"   Successfully uploaded: {success_count} records")
     if error_count > 0:
         typer.echo(f"   Failed: {error_count} records")
+
 
 if __name__ == "__main__":
     app()
