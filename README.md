@@ -26,7 +26,8 @@ uv run python fitbit_garmin_converter/cli.py convert-weight \
 uv run python fitbit_garmin_converter/cli.py upload-to-garmin \
     tests/test_data \
     --unit lbs \
-    --timezone-name America/Los_Angeles
+    --timezone-name America/Los_Angeles \
+    --limit 10
 ```
 
 The timezone defaults to `America/Los_Angeles`. Other common options:

@@ -97,6 +97,9 @@ def upload_to_garmin(
     dry_run: bool = typer.Option(
         False, help="Simulate upload without actually sending data"
     ),
+    limit: int = typer.Option(
+        None, help="Limit the number of records to upload"
+    ),
 ):
     """Upload Fitbit weight data directly to Garmin Connect via API."""
 
@@ -153,7 +156,12 @@ def upload_to_garmin(
     # Sort by datetime
     df = df.sort_values("datetime")
 
-    typer.echo(f"Found {len(df)} weight records to upload")
+    # Apply limit if specified
+    if limit is not None and limit > 0:
+        df = df.head(limit)
+        typer.echo(f"Found {len(df)} weight records (limited to {limit})")
+    else:
+        typer.echo(f"Found {len(df)} weight records to upload")
 
     if dry_run:
         typer.echo("\nDRY RUN MODE - No data will be uploaded")
