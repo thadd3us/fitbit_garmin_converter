@@ -23,12 +23,19 @@ uv run python fitbit_garmin_converter/cli.py convert-weight \
 ```bash
 uv run python fitbit_garmin_converter/cli.py upload-to-garmin \
     tests/test_data \
-    --unit lbs
+    --unit lbs \
+    --timezone-name America/Los_Angeles
 ```
+
+The timezone defaults to `America/Los_Angeles`. Other common options:
+- `America/New_York` (Eastern)
+- `America/Chicago` (Central)
+- `America/Denver` (Mountain)
+- `Europe/London`, `Asia/Tokyo`, etc.
 
 Set credentials via environment variables or you'll be prompted:
 ```bash
-export GARMIN_EMAIL="thad@imbue.com"
+export GARMIN_EMAIL="your@email.com"
 export GARMIN_PASSWORD="yourpassword"
 ```
 

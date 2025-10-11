@@ -91,11 +91,24 @@ def upload_to_garmin(
         "weight*.json", help="Glob pattern for weight files"
     ),
     unit: str = typer.Option("lbs", help="Weight unit (kg or lbs)"),
+    timezone_name: str = typer.Option(
+        "America/Los_Angeles", help="Timezone for weight timestamps (e.g., America/New_York, Europe/London)"
+    ),
     dry_run: bool = typer.Option(
         False, help="Simulate upload without actually sending data"
     ),
 ):
     """Upload Fitbit weight data directly to Garmin Connect via API."""
+
+    # Validate timezone
+    try:
+        tz = ZoneInfo(timezone_name)
+    except Exception as e:
+        typer.echo(f"❌ Invalid timezone: {timezone_name}")
+        typer.echo(f"   Error: {e}")
+        typer.echo("   Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles")
+        typer.echo("   For a full list, see: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+        raise typer.Exit(1)
 
     try:
         from garminconnect import (
@@ -211,10 +224,10 @@ def upload_to_garmin(
 
     for idx, row in df.iterrows():
         try:
-            # Convert datetime to timezone-aware
+            # Convert datetime to timezone-aware using specified timezone
             dt = row["datetime"]
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=ZoneInfo("America/Los_Angeles"))
+                dt = dt.replace(tzinfo=tz)
 
             # Format timestamp
             timestamp = dt.isoformat()
