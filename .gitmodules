@@ -1,0 +1,3 @@
+[submodule "third-party/python-garminconnect"]
+	path = third-party/python-garminconnect
+	url = https://github.com/cyberjunky/python-garminconnect.git
