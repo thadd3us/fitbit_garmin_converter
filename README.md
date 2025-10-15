@@ -1,4 +1,15 @@
-Thad's Sculpture to convert Fitbit data to a Garmin format.
+# Fitbit to Garmin Data Converter
+
+This tool converts Fitbit weight data to Garmin Connect format and uploads it directly via the Garmin Connect API.
+
+## Why This Tool Exists
+
+When migrating from Fitbit to Garmin, the official Garmin CSV uploader has several limitations:
+- It often doesn't work reliably
+- It only supports one measurement per day
+- It doesn't capture the timestamp of measurements
+
+This tool solves these problems by using the Garmin Connect API to upload data with full timestamp precision, allowing multiple measurements per day.
 
 Created with Sculptor by Imbue.
 
