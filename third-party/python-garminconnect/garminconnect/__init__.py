@@ -709,12 +709,10 @@ class Garmin:
         logger.debug("Adding weigh-in")
 
         response = self.garth.post("connectapi", url, json=payload)
-        # Garmin API sometimes returns empty responses on success
-        if not response.text or response.text.strip() == "":
-            return {"success": True, "message": "Weight added successfully (empty response)"}
         try:
             return response.json()
         except ValueError:
+            # Garmin API sometimes returns empty responses on success
             # If we can't parse JSON but got a successful status code, treat as success
             if response.status_code in (200, 201, 204):
                 return {"success": True, "message": "Weight added successfully"}
