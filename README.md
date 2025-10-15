@@ -47,3 +47,17 @@ export GARMIN_PASSWORD="yourpassword"
 ```bash
 uv run pytest
 ```
+
+## Updating the python-garminconnect Subtree
+
+The `third-party/python-garminconnect` directory is maintained as a git subtree, which means the code is committed directly into this repository while maintaining a connection to the upstream repository.
+
+To pull updates from upstream:
+```bash
+git subtree pull --prefix=third-party/python-garminconnect https://github.com/cyberjunky/python-garminconnect.git main --squash
+```
+
+To push changes back to upstream (if you have permissions):
+```bash
+git subtree push --prefix=third-party/python-garminconnect <url> <branch>
+```
